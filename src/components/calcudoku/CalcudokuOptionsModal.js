@@ -18,11 +18,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 // Images
 import globeIcon from '../../images/globe-icon.png';
 
-export default function CalcudokuOptionsModal({
-	handleGeneration,
-	setSize,
-	size,
-}) {
+export default function CalcudokuOptionsModal({ ...props }) {
 	// TODO: display image of puzzle grid for each size
 
 	// Modal visible state
@@ -31,7 +27,7 @@ export default function CalcudokuOptionsModal({
 	// Close modal and generate puzzle
 	const handleClose = () => {
 		setShowModal(false);
-		handleGeneration();
+		props.generate();
 	};
 
 	return (
@@ -85,7 +81,7 @@ export default function CalcudokuOptionsModal({
 								/>
 
 								<Figure.Caption className="text-center">
-									{size} by {size} puzzle
+									{props.size} by {props.size} puzzle
 								</Figure.Caption>
 							</Figure>
 						</Col>
@@ -104,10 +100,10 @@ export default function CalcudokuOptionsModal({
 										<ButtonGroup key={arr} size="lg">
 											{arr.map(radio => (
 												<ToggleButton
-													checked={size === radio}
+													checked={props.size === radio}
 													id={`radio-${radio}`}
 													key={radio}
-													onChange={e => setSize(e.target.value)}
+													onChange={e => props.setSize(e.target.value)}
 													type="radio"
 													value={radio}
 													variant={'outline-primary'}

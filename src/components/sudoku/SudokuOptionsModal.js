@@ -17,11 +17,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 // Images
 import globeIcon from '../../images/globe-icon.png';
 
-export default function SudokuOptionsModal({
-	difficulty,
-	handleGeneration,
-	setDifficulty,
-}) {
+export default function SudokuOptionsModal({ ...props }) {
 	// TODO: display image of sudoku grid for each difficulty state with showing how many givens to expect
 
 	// Difficulty selection buttons
@@ -34,17 +30,17 @@ export default function SudokuOptionsModal({
 
 	// Modal visible state
 	const [showModal, setShowModal] = useState(true);
-	const [givens, setGivens] = useState(radios[difficulty].givens);
+	const [givens, setGivens] = useState(radios[props.difficulty].givens);
 
 	// Close modal and generate puzzle
 	const handleClose = () => {
 		setShowModal(false);
-		handleGeneration();
+		props.generate();
 	};
 
 	// Adjust difficulty state and display image based on selection
 	const handleSelection = e => {
-		setDifficulty(e);
+		props.setDifficulty(e);
 		setGivens(radios[e].givens);
 	};
 
@@ -111,7 +107,7 @@ export default function SudokuOptionsModal({
 							<ButtonGroup size="lg">
 								{radios.map(radio => (
 									<ToggleButton
-										checked={difficulty === radio.value}
+										checked={props.difficulty === radio.value}
 										id={`radio-${radio.value}`}
 										key={radio.value}
 										onChange={e => handleSelection(e.target.value)}

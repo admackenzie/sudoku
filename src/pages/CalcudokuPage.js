@@ -18,9 +18,8 @@ export default function CalcudokuPage(props) {
 	return (
 		<div>
 			<CalcudokuOptionsModal
-				handleGeneration={handleGeneration}
+				generate={handleGeneration}
 				size={size}
-				// handleGeneration={handleGeneration}
 				setSize={setSize}
 			/>
 			<h1>Calcudoku page</h1>

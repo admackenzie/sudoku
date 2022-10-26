@@ -23,7 +23,7 @@ export default function SudokuPage(props) {
 		<div>
 			<SudokuOptionsModal
 				difficulty={difficulty}
-				handleGeneration={handleGeneration}
+				generate={handleGeneration}
 				setDifficulty={setDifficulty}
 			/>
 			<h1>Sudoku page</h1>
