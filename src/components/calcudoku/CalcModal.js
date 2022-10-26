@@ -18,7 +18,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 // Images
 import globeIcon from '../../images/globe-icon.png';
 
-export default function CalcudokuOptionsModal({ ...props }) {
+export default function CalcModal({ ...props }) {
 	// TODO: display image of puzzle grid for each size
 
 	// Modal visible state

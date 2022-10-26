@@ -1,6 +1,3 @@
-// Components
-import Container from 'react-bootstrap/Container';
-
 // Custom components
 import Footer from './Footer';
 import Header from './Header';

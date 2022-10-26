@@ -31,42 +31,4 @@ export default function Header() {
 			</Container>
 		</Navbar>
 	);
-
-	// return (
-	// 	<nav className="navbar navbar-expand-sm bg-light">
-	// 		<div className="container-fluid">
-	// 			{/* Home link */}
-	// 			<Link className="navbar-brand" to="/">
-	// 				[LOGO]
-	// 			</Link>
-	// 			{/* Hamburger button toggler */}
-	// 			<button
-	// 				className="navbar-toggler"
-	// 				data-bs-toggle="collapse"
-	// 				data-bs-target="#navbar"
-	// 				type="button"
-	// 			>
-	// 				<span className="navbar-toggler-icon"></span>
-	// 			</button>
-	// 			{/* Links */}
-	// 			<div
-	// 				className="collapse navbar-collapse"
-	// 				// ID for hamburger button functionality
-	// 				id="navbar"
-	// 			>
-	// 				<ul className="navbar-nav">
-	// 					{['Sudoku', 'Calcudoku'].map(a => {
-	// 						return (
-	// 							<li className="nav-item" key={a}>
-	// 								<Link className="active nav-link" to={`/${a.toLowerCase()}`}>
-	// 									{a}
-	// 								</Link>
-	// 							</li>
-	// 						);
-	// 					})}
-	// 				</ul>
-	// 			</div>
-	// 		</div>
-	// 	</nav>
-	// );
 }
