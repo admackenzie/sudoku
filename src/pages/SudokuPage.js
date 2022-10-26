@@ -1,10 +1,12 @@
 import { useState } from 'react';
 
 import SudokuOptionsModal from '../components/sudoku/SudokuOptionsModal';
+import Grid from '../components/Grid';
 
 // Logic functions
 import { easy, intermediate, hard, expert } from '../modules/puzzles';
 import { createSymmetry } from '../modules/symmetry.js';
+import { Col, Container, Row } from 'react-bootstrap';
 
 export default function SudokuPage(props) {
 	const [difficulty, setDifficulty] = useState('0');
@@ -19,14 +21,25 @@ export default function SudokuPage(props) {
 		);
 	};
 
+	console.log(puzzle);
 	return (
-		<div>
+		<Container>
 			<SudokuOptionsModal
 				difficulty={difficulty}
 				generate={handleGeneration}
 				setDifficulty={setDifficulty}
 			/>
-			<h1>Sudoku page</h1>
-		</div>
+
+			<Container>
+				<Row>
+					<h1>Sudoku page</h1>
+				</Row>
+
+				<Row>
+					{/* Display grid only after puzzle is generated */}
+					<Col className="col-8">{puzzle && <Grid puzzle={puzzle} />}</Col>
+				</Row>
+			</Container>
+		</Container>
 	);
 }

@@ -12,9 +12,7 @@ export default function Layout(props) {
 				<Header />
 			</header>
 
-			<Container>
-				<main>{props.children}</main>
-			</Container>
+			<main>{props.children}</main>
 
 			<footer>
 				<Footer />

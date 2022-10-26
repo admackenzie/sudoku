@@ -1,6 +1,9 @@
 import { useState } from 'react';
 
 import CalcudokuOptionsModal from '../components/calcudoku/CalcudokuOptionsModal';
+import Grid from '../components/Grid';
+
+import { Col, Container, Row } from 'react-bootstrap';
 
 // Logic functions
 import { generate } from '../modules/calcudoku.js';
@@ -16,13 +19,25 @@ export default function CalcudokuPage(props) {
 	console.log(puzzle && puzzle.cages);
 
 	return (
-		<div>
+		<Container>
 			<CalcudokuOptionsModal
 				generate={handleGeneration}
 				size={size}
 				setSize={setSize}
 			/>
-			<h1>Calcudoku page</h1>
-		</div>
+
+			<Container>
+				<Row>
+					<h1>Calcudoku page</h1>
+				</Row>
+
+				<Row>
+					{/* Display grid only after puzzle is generated */}
+					<Col className="col-8">
+						{puzzle && <Grid puzzle={puzzle.puzzleStr} size={size} />}
+					</Col>
+				</Row>
+			</Container>
+		</Container>
 	);
 }
