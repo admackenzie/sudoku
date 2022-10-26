@@ -1,6 +1,3 @@
-// Components
-import Container from 'react-bootstrap/Container';
-
 // Custom components
 import Footer from './Footer';
 import Header from './Header';
@@ -12,9 +9,7 @@ export default function Layout(props) {
 				<Header />
 			</header>
 
-			<Container>
-				<main>{props.children}</main>
-			</Container>
+			<main>{props.children}</main>
 
 			<footer>
 				<Footer />

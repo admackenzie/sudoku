@@ -17,7 +17,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 // Images
 import globeIcon from '../../images/globe-icon.png';
 
-export default function SudokuOptionsModal({ ...props }) {
+export default function SudModal({ ...props }) {
 	// TODO: display image of sudoku grid for each difficulty state with showing how many givens to expect
 
 	// Difficulty selection buttons
