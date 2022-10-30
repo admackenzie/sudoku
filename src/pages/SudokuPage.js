@@ -6,15 +6,18 @@ import { Button, Col, Container, Row } from 'react-bootstrap';
 // Custom components
 import SudGrid from '../components/sudoku/SudGrid';
 import SudModal from '../components/sudoku/SudModal';
+import SidePanel from '../components/sudoku/SidePanel';
 
 // Logic
 import { easy, intermediate, hard, expert } from '../modules/puzzles';
-import { createSymmetry } from '../modules/symmetry.js';
+import { solve } from '../modules/solve';
+import { createSymmetry } from '../modules/symmetry';
 
 export default function SudokuPage() {
 	const [difficulty, setDifficulty] = useState('0');
 	const [puzzle, setPuzzle] = useState();
 	const [answer, setAnswer] = useState();
+	const [puzzleSolution, setPuzzleSolution] = useState();
 
 	// Choose random puzzle from the selected difficulty, create a symmetry, and set the resulting string as the puzzle state
 	const handleGeneration = () => {
@@ -25,8 +28,10 @@ export default function SudokuPage() {
 
 		setPuzzle(newPuzzle);
 		setAnswer(newPuzzle.split(''));
+		setPuzzleSolution(solve(newPuzzle));
 	};
 
+	// Modify answer array
 	const handleAnswer = (val, cellIdx) => {
 		const temp = [...answer];
 		temp.splice(cellIdx, 1, val);
@@ -34,7 +39,26 @@ export default function SudokuPage() {
 		setAnswer(temp);
 	};
 
-	const handleSolve = () => setAnswer(puzzle);
+	// Focus state for answer input via number buttons
+	const [focusedCell, setFocusedCell] = useState();
+	const handleFocus = e => {
+		// console.log(e);
+		setFocusedCell(e);
+	};
+
+	const handleButtonAnswer = e => {
+		handleAnswer(e, focusedCell);
+	};
+
+	// TODO: test state to see if user inputted answers are correct solution -- useEffect?
+
+	const [solved, setSolved] = useState(false);
+	const handleSolve = () => {
+		setSolved(true);
+		setAnswer(puzzleSolution.split(''));
+
+		if (answer && answer.join('') === puzzleSolution) handleSolve();
+	};
 
 	return (
 		<Container>
@@ -45,7 +69,6 @@ export default function SudokuPage() {
 				setDifficulty={setDifficulty}
 			/>
 
-			{/* Puzzle grid */}
 			<Container>
 				<Row>
 					<Col>
@@ -64,10 +87,19 @@ export default function SudokuPage() {
 						{puzzle && (
 							<SudGrid
 								answer={answer}
+								handleFocus={handleFocus}
 								handleAnswer={handleAnswer}
 								puzzle={puzzle}
+								solved={solved}
 							/>
 						)}
+					</Col>
+
+					<Col>
+						<SidePanel
+							focusedCell={focusedCell}
+							handleButtonAnswer={handleButtonAnswer}
+						/>
 					</Col>
 				</Row>
 			</Container>

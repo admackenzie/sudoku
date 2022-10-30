@@ -58,7 +58,7 @@ const solve = str => {
 	if (solution.every(row => !row.includes('0')) && solution.length > 0) {
 		console.timeEnd('Time');
 		console.log('Backtracks:', backtracks);
-		console.log('Puzzle:', format(str, 9));
+		// console.log('Puzzle:', format(str, 9));
 		console.log('Solution:', solution);
 
 		// Return solution formatted as a string

@@ -9,6 +9,7 @@ import CalcModal from '../components/calcudoku/CalcModal';
 import Solutions from '../components/calcudoku/Solutions';
 import AnswerBar from '../components/AnswerBar';
 import AnswerGrid from '../components/AnswerGrid';
+import AnswerGridEnhanced from '../components/AnswerGridEnhanced';
 
 // Logic
 import { generate } from '../modules/calcudoku.js';
@@ -78,7 +79,8 @@ export default function CalcudokuPage() {
 			</Container>
 
 			{/* <AnswerBar size={size} /> */}
-			<AnswerGrid size={size} />
+			{/* <AnswerGrid size={size} /> */}
+			{/* <AnswerGridEnhanced size={size} /> */}
 		</Container>
 	);
 }

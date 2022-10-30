@@ -2,7 +2,7 @@
 import { Col, Container, Row } from 'react-bootstrap';
 
 // Custom components
-import CellContent from '../CellContent';
+import SudCell from './SudCell';
 
 export default function SudGrid({ ...props }) {
 	return (
@@ -23,19 +23,11 @@ export default function SudGrid({ ...props }) {
 														9 * (gridRow + boxRow) + gridCol + boxCol;
 
 													return (
-														// Cell style
-														<Col
-															className="border border-dark border-2 p-1"
+														<SudCell
+															{...props}
+															cellIdx={cellIdx}
 															key={boxCol}
-														>
-															<CellContent
-																answer={props.answer}
-																cellIdx={cellIdx}
-																handleAnswer={props.handleAnswer}
-																puzzle={props.puzzle}
-																sudoku
-															/>
-														</Col>
+														/>
 													);
 												})}
 											</Row>
