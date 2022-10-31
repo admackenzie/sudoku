@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Styles
 import classes from './SudCell.module.css';
@@ -6,9 +6,7 @@ import classes from './SudCell.module.css';
 // Components
 import { CloseButton, Col, Form } from 'react-bootstrap';
 
-// TODO: implement side panel and link buttons to cell index
-
-export default function CalcCell({ ...props }) {
+export default function SudCell({ ...props }) {
 	const cellVal = props.answer[props.cellIdx];
 	const re = /\b[1-9]\b/;
 
@@ -27,46 +25,55 @@ export default function CalcCell({ ...props }) {
 	// Handle undo functionality
 	const handleRemoveAnswer = () => {
 		props.handleAnswer('0', props.cellIdx);
-		setHover(false);
+		// setHover(false);
 	};
 
-	// Undo button styling
-	const [hover, setHover] = useState(false);
-	const handleButtonAppearance = () => setHover(!hover);
+	// FIXME: Is there lag from loading the whole node list on each click?
+	// Highlight first empty cell on first page render and keep cells highlighted on click away
+	// Must add sudCell class to all inputs
+	// useEffect(() => {
+	// 	document
+	// 		.querySelectorAll('.sudCell')
+	// 		.forEach(node => node.classList.remove(classes.focused));
+
+	// 	document
+	// 		.getElementById(`cell-${props.focusedCell}`)
+	// 		.classList.add(classes.focused);
+	// }, [props.focusedCell]);
 
 	return (
-		<Col className="border border-dark border-2 p-1">
+		<Col
+			className="border border-dark border-2 p-1"
+			onClick={() => props.handleFocus(props.cellIdx)}
+		>
 			{
 				// Test if a valid answer has been provided for cell
 				!given && !props.solved && re.test(cellVal) ? (
 					// Display cell with answer and undo button
 					<div className="position-relative">
 						<CloseButton
-							className="position-absolute top-0 end-0"
+							className={`${classes.undoButton} position-absolute top-0 end-0`}
 							onClick={handleRemoveAnswer}
-							onMouseEnter={handleButtonAppearance}
-							onMouseLeave={handleButtonAppearance}
-							style={{
-								fontSize: `${hover ? '100%' : '95%'}`,
-								opacity: `${hover ? '1' : '0.1'}`,
-								transition: '0.1s ease-in',
-							}}
 						/>
 
 						<Form.Control
-							className="fs-1 text-center"
+							className={`${classes.input} fs-1 text-center`}
 							defaultValue={cellVal}
-							readOnly
+							disabled
+							id={`cell-${props.cellIdx}`}
 						></Form.Control>
 					</div>
 				) : (
 					// Display all other cells
 					<Form.Control
-						className="fs-1 text-center"
+						className={`${classes.input} fs-1 text-center`}
 						defaultValue={re.test(cellVal) ? cellVal : null}
 						disabled={given || props.solved}
-						onFocus={() => props.handleFocus(props.cellIdx)}
+						id={`cell-${props.cellIdx}`}
+						onClick={() => props.handleFocus(props.cellIdx)}
+						// onFocus={() => props.handleFocus(props.cellIdx)}
 						onInput={e => handleEnterAnswer(e)}
+						// tabIndex={given || props.solved ? -1 : 0}
 					></Form.Control>
 				)
 			}
