@@ -27,6 +27,13 @@ export default function AnswerGrid({ ...props }) {
 					</ButtonGroup>
 				);
 			})}
+
+			<ButtonGroup size="sm">
+				<Button variant="primary">Up</Button>
+				<Button variant="primary">Down</Button>
+				<Button variant="primary">Left</Button>
+				<Button variant="primary">Right</Button>
+			</ButtonGroup>
 		</ButtonToolbar>
 	);
 }

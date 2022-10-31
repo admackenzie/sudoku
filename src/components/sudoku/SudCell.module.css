@@ -1,3 +1,35 @@
-.input:focus {
-	background-color: lightblue;
+:root {
+	--default-disabled-color: #e9ecef;
 }
+
+/* Style for default focus effect */
+.focused {
+	border: 1px solid #86b7fe;
+	box-shadow: 0 0 0 0.25rem rgb(13 110 253 / 25%);
+}
+
+.input,
+.input:disabled {
+	background-color: #fff;
+	border: 1px solid #fff;
+	box-shadow: 0 0 0 0.25rem #fff;
+}
+
+.undoButton {
+	font-size: 95%;
+	opacity: 0.1;
+	/* transition: 0.1s ease-in; */
+}
+
+.undoButton:hover {
+	font-size: 100%;
+	opacity: 0.2;
+	/* transition: 0.2s ease-in; */
+}
+
+/* .solved {
+	background-color: #198754;
+	border: 1px solid #198754;
+	box-shadow: 0 0 0 0.25rem #198754;
+	color: #fff;
+} */

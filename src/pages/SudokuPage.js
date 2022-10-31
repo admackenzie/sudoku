@@ -29,6 +29,9 @@ export default function SudokuPage() {
 		setPuzzle(newPuzzle);
 		setAnswer(newPuzzle.split(''));
 		setPuzzleSolution(solve(newPuzzle));
+
+		// Set focused cell to first cell without a given number
+		setFocusedCell(newPuzzle.search(/0/));
 	};
 
 	// Modify answer array
@@ -48,6 +51,9 @@ export default function SudokuPage() {
 
 	const handleButtonAnswer = e => {
 		handleAnswer(e, focusedCell);
+
+		// Set focused state to next empty cell (FIXME: breaks at end of array)
+		// setFocusedCell(answer.findIndex((v, i) => i > focusedCell && v === '0'));
 	};
 
 	// TODO: test state to see if user inputted answers are correct solution -- useEffect?
@@ -87,6 +93,7 @@ export default function SudokuPage() {
 						{puzzle && (
 							<SudGrid
 								answer={answer}
+								focusedCell={focusedCell}
 								handleFocus={handleFocus}
 								handleAnswer={handleAnswer}
 								puzzle={puzzle}
