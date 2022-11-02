@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Components
-import { Button, Col, Container, Row } from 'react-bootstrap';
+import { Col, Container, Row } from 'react-bootstrap';
 
 // Custom components
 import SudGrid from '../components/sudoku/SudGrid';
@@ -31,7 +31,7 @@ export default function SudokuPage() {
 		setPuzzleSolution(solve(newPuzzle));
 
 		// Set focused cell to first cell without a given number
-		setFocusedCell(newPuzzle.search(/0/));
+		// setFocusedCell(newPuzzle.search(/0/));
 	};
 
 	// Modify answer array
@@ -44,20 +44,9 @@ export default function SudokuPage() {
 
 	// Focus state for answer input via number buttons
 	const [focusedCell, setFocusedCell] = useState();
-	const handleFocus = e => {
-		// console.log(e);
-		setFocusedCell(e);
-	};
-
-	const handleButtonAnswer = e => {
-		handleAnswer(e, focusedCell);
-
-		// Set focused state to next empty cell (FIXME: breaks at end of array)
-		// setFocusedCell(answer.findIndex((v, i) => i > focusedCell && v === '0'));
-	};
+	const handleFocus = e => setFocusedCell(e);
 
 	// TODO: test state to see if user inputted answers are correct solution -- useEffect?
-
 	const [solved, setSolved] = useState(false);
 	const handleSolve = () => {
 		setSolved(true);
@@ -75,41 +64,29 @@ export default function SudokuPage() {
 				setDifficulty={setDifficulty}
 			/>
 
-			<Container>
-				<Row>
-					<Col>
-						<h1>Sudoku page</h1>
-					</Col>
-					<Col>
-						<Button onClick={handleSolve} size="lg" variant="primary">
-							Solve
-						</Button>
-					</Col>
-				</Row>
-
-				<Row>
-					{/* Display grid only after puzzle is generated */}
+			{/* Page content loaded when puzzle is generated */}
+			{puzzle && (
+				<Row className="mt-5">
 					<Col className="col-9">
-						{puzzle && (
-							<SudGrid
-								answer={answer}
-								focusedCell={focusedCell}
-								handleFocus={handleFocus}
-								handleAnswer={handleAnswer}
-								puzzle={puzzle}
-								solved={solved}
-							/>
-						)}
+						<SudGrid
+							answer={answer}
+							focusedCell={focusedCell}
+							handleAnswer={handleAnswer}
+							handleFocus={handleFocus}
+							puzzle={puzzle}
+							solved={solved}
+						/>
 					</Col>
 
 					<Col>
 						<SidePanel
 							focusedCell={focusedCell}
-							handleButtonAnswer={handleButtonAnswer}
+							handleAnswer={handleAnswer}
+							handleSolve={handleSolve}
 						/>
 					</Col>
 				</Row>
-			</Container>
+			)}
 		</Container>
 	);
 }

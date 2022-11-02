@@ -26,13 +26,16 @@ export default function CalcudokuPage() {
 		setAnswer(Array(Math.pow(size, 2)).fill('0'));
 	};
 
-	// Display solutions element when mouse enters a cage
+	// Display solutions element on clicking a cage
 	const handleSolutions = cageIdx => {
-		// FIXME: all the children of the CalcGrid cell element need to have the data-value attribute or they will sometimes pass undefined as the argument to this function. The ternary below prevents errors from this but is there a better solution?
-		const solutionArr = cageIdx ? puzzle.cages[cageIdx].solutions : [];
+		const solutionArr = Number.isInteger(cageIdx)
+			? puzzle.cages[cageIdx].solutions
+			: [];
+
 		setSolutions(solutionArr.length > 0 ? solutionArr : null);
 	};
 
+	// Modify answer array
 	const handleAnswer = (val, cellIdx) => {
 		const temp = [...answer];
 		temp.splice(cellIdx, 1, val);
@@ -40,45 +43,75 @@ export default function CalcudokuPage() {
 		setAnswer(temp);
 	};
 
-	// TODO: onMouseLeave event to make Solutions element disappear
+	// Focus state for answer input via number buttons
+	const [focusedCell, setFocusedCell] = useState();
+	const handleFocus = e => setFocusedCell(e);
+
+	// Solve state
+	const [solved, setSolved] = useState(false);
+	const handleSolve = () => {
+		setSolved(true);
+		setAnswer(puzzle.puzzleStr.split(''));
+
+		if (answer && answer.join('') === puzzle.puzzleStr) handleSolve();
+	};
+
+	// Remember state of eliminated answer numbers for each cell
+	const [eliminatedNumbers, setEliminatedNumbers] = useState({});
+	const handleEliminateNumber = (btnNum, e) => {
+		// Create empty array for new cells
+		const arr = eliminatedNumbers[focusedCell]
+			? eliminatedNumbers[focusedCell]
+			: [];
+
+		// Toggle eliminated status by adding or removing button number
+		arr.includes(btnNum)
+			? arr.splice(arr.indexOf(btnNum), 1)
+			: arr.push(btnNum);
+
+		const temp = { ...eliminatedNumbers };
+		temp[focusedCell] = arr;
+
+		setEliminatedNumbers(temp);
+
+		e.preventDefault();
+	};
 
 	return (
 		<Container>
 			<CalcModal generate={handleGeneration} size={size} setSize={setSize} />
 
-			<Container>
-				<Row>
-					<Col>
-						<h1>Calcudoku page</h1>
-					</Col>
-					<Col>
-						<Button size="lg" variant="primary">
-							Solve
-						</Button>
-					</Col>
-				</Row>
+			<Row>
+				{/* Display grid only after puzzle is generated */}
+				<Col className="col-9">
+					{puzzle && (
+						<CalcGrid
+							answer={answer}
+							cages={puzzle.cages}
+							focusedCell={focusedCell}
+							handleAnswer={handleAnswer}
+							handleFocus={handleFocus}
+							handleSolutions={handleSolutions}
+							puzzle={puzzle.puzzleStr}
+							size={size}
+							solved={solved}
+						/>
+					)}
 
-				<Row>
-					{/* Display grid only after puzzle is generated */}
-					<Col className="col-9">
-						{puzzle && (
-							<CalcGrid
-								answer={answer}
-								cages={puzzle.cages}
-								handleAnswer={handleAnswer}
-								onMouseEnter={handleSolutions}
-								puzzle={puzzle.puzzleStr}
-								size={size}
-							/>
-						)}
-					</Col>
+					<AnswerBar
+						eliminatedNumbers={eliminatedNumbers}
+						focusedCell={focusedCell}
+						handleAnswer={handleAnswer}
+						handleEliminateNumber={handleEliminateNumber}
+						handleSolve={handleSolve}
+						size={size}
+					/>
+				</Col>
 
-					{/* Display solutions on hover */}
-					<Col>{solutions && <Solutions solutions={solutions} />}</Col>
-				</Row>
-			</Container>
+				{/* Display solutions on hover */}
+				<Col>{solutions && <Solutions solutions={solutions} />}</Col>
+			</Row>
 
-			{/* <AnswerBar size={size} /> */}
 			{/* <AnswerGrid size={size} /> */}
 			{/* <AnswerGridEnhanced size={size} /> */}
 		</Container>

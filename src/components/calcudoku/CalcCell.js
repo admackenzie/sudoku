@@ -1,65 +1,89 @@
 import { useState } from 'react';
 
-// Components
-import Col from 'react-bootstrap/Col';
+import classes from '../sudoku/SudCell.module.css';
 
-// Custom components
-import AnswerInset from '../AnswerInset';
-import CalcCellHeader from './CalcCellHeader';
+// Components
+import { CloseButton, Col, Form, FormControl, Stack } from 'react-bootstrap';
 
 export default function CalcCell({ ...props }) {
 	const cageIdx = props.cages.findIndex(a => a.idx.includes(props.cellIdx));
+	const cage = props.cages[cageIdx];
 	const cellVal = props.answer[props.cellIdx];
-	const re = /\b[1-9]\b/;
+	const re = new RegExp(`\\b[1-${props.size}]\\b`);
 
-	// Handle visibility of close button and answer buttons
-	const [answered, setAnswered] = useState(re.test(cellVal));
-	const handleAnswerEl = () => setAnswered(!answered);
+	const [cageState, setCageState] = useState(cageIdx);
 
 	// Handle undo functionality
-	const handleRemoveAnswer = () => {
-		props.handleAnswer('0', props.cellIdx);
-		handleAnswerEl();
+	const handleRemoveAnswer = () => props.handleAnswer('0', props.cellIdx);
+
+	// Handle answer input
+	const handleEnterAnswer = e => {
+		if (re.test(e.target.value))
+			props.handleAnswer(e.target.value, props.cellIdx);
+
+		// Prevent all inputs but single digits from 1 to {puzzle size}
+		e.target.value = null;
 	};
 
-	// Handle highlight
-	// const [highlightTEST, setHighlightTEST] = useState(false);
-	// const handleClick = () => setHighlightTEST(!highlightTEST);
+	const handleClick = () => {
+		props.handleFocus(props.cellIdx);
+		props.handleSolutions(cageState);
+	};
 
 	return (
 		<Col
-			className={`border border-2 p-1 border-dark`}
-			data-value={cageIdx}
-			// onClick={handleClick}
-			onMouseEnter={e => props.onMouseEnter(e.target.dataset.value)}
-			style={{ backgroundColor: props.cages[cageIdx].color }}
+			className="border border-dark border-2 p-1 "
+			onClick={handleClick}
+			// data-value={cageIdx}
+			// onMouseEnter={() => props.onMouseEnter(cageState)}
+			// onMouseLeave={() => props.onMouseEnter(null)}
+			style={{ backgroundColor: cage.color }}
 		>
-			{/* Cell Content */}
-			<div className="d-flex flex-column h-100">
-				<CalcCellHeader
-					{...props}
-					answered={answered}
-					cage={props.cages[cageIdx]}
-					handleRemoveAnswer={handleRemoveAnswer}
-				/>
-
-				{/* Cell value */}
-				<div className=" align-items-center d-flex fs-1 h-100 justify-content-center">
-					{re.test(cellVal) && cellVal}
+			<Stack className="position-relative">
+				{/* Cell header */}
+				<div className="fs-5 position-absolute start-0 top-0">
+					{props.cellIdx === cage.anchor
+						? `${cage.value || ' '}${cage.op || ' '}`
+						: String.fromCharCode(160)}
 				</div>
 
-				{/* Answer buttons only visible when answer has not been entered*/}
-				{!answered && (
-					<AnswerInset
-						{...props}
-						// data-value={cageIdx}
-						// cellIdx={props.cellIdx}
-						// handleAnswer={props.handleAnswer}
-						handleAnswerEl={handleAnswerEl}
-						// size={props.size}
-					/>
+				{!props.solved && re.test(cellVal) ? (
+					// Display cell with answer and undo button
+					<div>
+						<CloseButton
+							className={`${classes.undoButton} end-0 position-absolute top-0 `}
+							onClick={handleRemoveAnswer}
+						/>
+
+						<Form.Control
+							className={`${classes.input} fs-1 text-center`}
+							defaultValue={cellVal}
+							disabled
+							id={`cell-${props.cellIdx}`}
+							style={{
+								backgroundColor: cage.color,
+								border: `1px solid ${cage.color}`,
+								boxShadow: `0 0 0 0.25rem ${cage.color}`,
+							}}
+						></Form.Control>
+					</div>
+				) : (
+					// Display unanswered or solved cell
+					<Form.Control
+						className={`${classes.input} fs-1 text-center`}
+						defaultValue={re.test(cellVal) ? cellVal : null}
+						disabled={props.solved}
+						id={`cell-${props.cellIdx}`}
+						onClick={() => props.handleFocus(props.cellIdx)}
+						onInput={e => handleEnterAnswer(e)}
+						style={{
+							backgroundColor: cage.color,
+							border: `1px solid ${cage.color}`,
+							boxShadow: `0 0 0 0.25rem ${cage.color}`,
+						}}
+					></Form.Control>
 				)}
-			</div>
+			</Stack>
 		</Col>
 	);
 }
