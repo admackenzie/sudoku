@@ -43,7 +43,7 @@ export default function SudCell({ ...props }) {
 
 	return (
 		<Col
-			className="border border-dark border-2 p-1"
+			className="border border-dark border-2 p-1 "
 			onClick={() => props.handleFocus(props.cellIdx)}
 		>
 			{
@@ -52,7 +52,7 @@ export default function SudCell({ ...props }) {
 					// Display cell with answer and undo button
 					<div className="position-relative">
 						<CloseButton
-							className={`${classes.undoButton} position-absolute top-0 end-0`}
+							className={`${classes.undoButton} end-0 position-absolute top-0 `}
 							onClick={handleRemoveAnswer}
 						/>
 

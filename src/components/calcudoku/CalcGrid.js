@@ -12,7 +12,6 @@ export default function CalcGrid({ ...props }) {
 					<Row key={row}>
 						{[...Array(+props.size).keys()].map(col => {
 							return (
-								// FIXME: All the children of this element must have the data-value attribute or the solutions element may not render/disappears when mousing over certain parts of the cage. Is there a way to force attribute inheritance? Use state instead?
 								<CalcCell
 									{...props}
 									cellIdx={props.size * row + col}
