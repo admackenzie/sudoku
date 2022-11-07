@@ -7,6 +7,7 @@ import { Button, Col, Container, Row } from 'react-bootstrap';
 import CalcGrid from '../components/calcudoku/CalcGrid';
 import CalcModal from '../components/calcudoku/CalcModal';
 import Solutions from '../components/calcudoku/Solutions';
+import AnswerInset from '../components/AnswerInset';
 import AnswerBar from '../components/AnswerBar';
 import AnswerGrid from '../components/AnswerGrid';
 import AnswerGridEnhanced from '../components/AnswerGridEnhanced';
@@ -17,8 +18,6 @@ import { generate } from '../modules/calcudoku.js';
 export default function CalcudokuPage() {
 	const [size, setSize] = useState('4');
 	const [puzzle, setPuzzle] = useState();
-	const [solutions, setSolutions] = useState();
-	const [answer, setAnswer] = useState();
 
 	// Set the puzzle state to an object with the puzzle string and its cages array
 	const handleGeneration = () => {
@@ -27,6 +26,7 @@ export default function CalcudokuPage() {
 	};
 
 	// Display solutions element on clicking a cage
+	const [solutions, setSolutions] = useState();
 	const handleSolutions = cageIdx => {
 		const solutionArr = Number.isInteger(cageIdx)
 			? puzzle.cages[cageIdx].solutions
@@ -36,17 +36,49 @@ export default function CalcudokuPage() {
 	};
 
 	// Modify answer array
-	const handleAnswer = (val, cellIdx) => {
+	const [answer, setAnswer] = useState();
+	const handleAnswer = (btnNum, cellIdx) => {
+		// Handle number buttons display
+		btnNum === '0'
+			? handleButtons(answer[cellIdx], cellIdx)
+			: handleButtons(btnNum, cellIdx);
+
 		const temp = [...answer];
-		temp.splice(cellIdx, 1, val);
+		temp.splice(cellIdx, 1, btnNum);
 
 		setAnswer(temp);
 	};
 
-	// Focus state for answer input via number buttons
-	const [focusedCell, setFocusedCell] = useState();
-	const handleFocus = e => setFocusedCell(e);
+	const [invalidButtons, setInvalidButtons] = useState({});
+	const handleButtons = (btnNum, cellIdx) => {
+		const rowIdx = Math.floor(cellIdx / size);
+		const colIdx = cellIdx % size;
 
+		const row = invalidButtons[`row${rowIdx}`]
+			? invalidButtons[`row${rowIdx}`]
+			: [];
+
+		const col = invalidButtons[`col${colIdx}`]
+			? invalidButtons[`col${colIdx}`]
+			: [];
+
+		const temp = { ...invalidButtons };
+
+		row.includes(btnNum)
+			? row.splice(row.indexOf(btnNum), 1)
+			: row.push(btnNum);
+
+		col.includes(btnNum)
+			? col.splice(col.indexOf(btnNum), 1)
+			: col.push(btnNum);
+
+		temp[`row${rowIdx}`] = row;
+		temp[`col${colIdx}`] = col;
+
+		setInvalidButtons(temp);
+	};
+
+	// TODO: implement solve button
 	// Solve state
 	const [solved, setSolved] = useState(false);
 	const handleSolve = () => {
@@ -54,27 +86,6 @@ export default function CalcudokuPage() {
 		setAnswer(puzzle.puzzleStr.split(''));
 
 		if (answer && answer.join('') === puzzle.puzzleStr) handleSolve();
-	};
-
-	// Remember state of eliminated answer numbers for each cell
-	const [eliminatedNumbers, setEliminatedNumbers] = useState({});
-	const handleEliminateNumber = (btnNum, e) => {
-		// Create empty array for new cells
-		const arr = eliminatedNumbers[focusedCell]
-			? eliminatedNumbers[focusedCell]
-			: [];
-
-		// Toggle eliminated status by adding or removing button number
-		arr.includes(btnNum)
-			? arr.splice(arr.indexOf(btnNum), 1)
-			: arr.push(btnNum);
-
-		const temp = { ...eliminatedNumbers };
-		temp[focusedCell] = arr;
-
-		setEliminatedNumbers(temp);
-
-		e.preventDefault();
 	};
 
 	return (
@@ -88,24 +99,16 @@ export default function CalcudokuPage() {
 						<CalcGrid
 							answer={answer}
 							cages={puzzle.cages}
-							focusedCell={focusedCell}
+							// focusedCell={focusedCell}
 							handleAnswer={handleAnswer}
-							handleFocus={handleFocus}
+							// handleFocus={handleFocus}
 							handleSolutions={handleSolutions}
+							invalid={invalidButtons}
 							puzzle={puzzle.puzzleStr}
 							size={size}
 							solved={solved}
 						/>
 					)}
-
-					<AnswerBar
-						eliminatedNumbers={eliminatedNumbers}
-						focusedCell={focusedCell}
-						handleAnswer={handleAnswer}
-						handleEliminateNumber={handleEliminateNumber}
-						handleSolve={handleSolve}
-						size={size}
-					/>
 				</Col>
 
 				{/* Display solutions on hover */}

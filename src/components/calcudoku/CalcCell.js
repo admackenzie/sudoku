@@ -1,50 +1,32 @@
-import { useState } from 'react';
-
-import classes from '../sudoku/SudCell.module.css';
+import classes from '../../calcudoku.module.css';
 
 // Components
-import { CloseButton, Col, Form, FormControl, Stack } from 'react-bootstrap';
+import { CloseButton, Col, Form, Stack } from 'react-bootstrap';
+
+import AnswerInset from '../AnswerInset';
 
 export default function CalcCell({ ...props }) {
-	const cageIdx = props.cages.findIndex(a => a.idx.includes(props.cellIdx));
-	const cage = props.cages[cageIdx];
+	const cageIdx = props.cages.findIndex(cage =>
+		cage.idx.includes(props.cellIdx)
+	);
+	const { anchor, color, op, value } = props.cages[cageIdx];
 	const cellVal = props.answer[props.cellIdx];
 	const re = new RegExp(`\\b[1-${props.size}]\\b`);
-
-	const [cageState, setCageState] = useState(cageIdx);
 
 	// Handle undo functionality
 	const handleRemoveAnswer = () => props.handleAnswer('0', props.cellIdx);
 
-	// Handle answer input
-	const handleEnterAnswer = e => {
-		if (re.test(e.target.value))
-			props.handleAnswer(e.target.value, props.cellIdx);
-
-		// Prevent all inputs but single digits from 1 to {puzzle size}
-		e.target.value = null;
-	};
-
-	const handleClick = () => {
-		props.handleFocus(props.cellIdx);
-		props.handleSolutions(cageState);
-	};
-
 	return (
 		<Col
 			className="border border-dark border-2 p-1 "
-			onClick={handleClick}
-			// data-value={cageIdx}
-			// onMouseEnter={() => props.onMouseEnter(cageState)}
-			// onMouseLeave={() => props.onMouseEnter(null)}
-			style={{ backgroundColor: cage.color }}
+			onMouseEnter={() => props.handleSolutions(cageIdx)}
+			onMouseLeave={() => props.handleSolutions(null)}
+			style={{ backgroundColor: color }}
 		>
 			<Stack className="position-relative">
 				{/* Cell header */}
 				<div className="fs-5 position-absolute start-0 top-0">
-					{props.cellIdx === cage.anchor
-						? `${cage.value || ' '}${cage.op || ' '}`
-						: String.fromCharCode(160)}
+					{anchor === props.cellIdx && `${value || ''}${op || ''}`}
 				</div>
 
 				{!props.solved && re.test(cellVal) ? (
@@ -56,32 +38,17 @@ export default function CalcCell({ ...props }) {
 						/>
 
 						<Form.Control
-							className={`${classes.input} fs-1 text-center`}
+							className={`${classes.cell} fs-1 text-center`}
 							defaultValue={cellVal}
 							disabled
-							id={`cell-${props.cellIdx}`}
-							style={{
-								backgroundColor: cage.color,
-								border: `1px solid ${cage.color}`,
-								boxShadow: `0 0 0 0.25rem ${cage.color}`,
-							}}
+							// id={`cell-${props.cellIdx}`}
 						></Form.Control>
 					</div>
 				) : (
-					// Display unanswered or solved cell
-					<Form.Control
-						className={`${classes.input} fs-1 text-center`}
-						defaultValue={re.test(cellVal) ? cellVal : null}
-						disabled={props.solved}
-						id={`cell-${props.cellIdx}`}
-						onClick={() => props.handleFocus(props.cellIdx)}
-						onInput={e => handleEnterAnswer(e)}
-						style={{
-							backgroundColor: cage.color,
-							border: `1px solid ${cage.color}`,
-							boxShadow: `0 0 0 0.25rem ${cage.color}`,
-						}}
-					></Form.Control>
+					// FIXME: fix the CSS so this div appears below the cell header without resorting to margin-top
+					<div className="mt-4">
+						<AnswerInset {...props} color={{ color }} />
+					</div>
 				)}
 			</Stack>
 		</Col>

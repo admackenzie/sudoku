@@ -298,7 +298,9 @@ const selectOps = (arr, str, n) => {
 	const cages = arr.map(cage => cage.map(n => str[n]));
 
 	// Convert cages of indices to cages of puzzle values as numbers for computation
-	const cagesN = arr.map(cage => cage.map(n => +str[n]).sort());
+	const cagesNum = arr.map(cage =>
+		cage.map(n => +str[n]).sort((a, b) => a - b)
+	);
 
 	const data = [];
 
@@ -313,8 +315,10 @@ const selectOps = (arr, str, n) => {
 		seq: 'Seq',
 	};
 
+	const colors = [...CSS_COLOR_NAMES];
+
 	// Determine valid operations for each cage
-	for (let cage of cagesN) {
+	for (let cage of cagesNum) {
 		const operations = [];
 
 		// Append even/odd for all cages
@@ -343,18 +347,20 @@ const selectOps = (arr, str, n) => {
 
 		// Create object of numbers, indices, operation, value, and all possible combos for each cage
 		const op = shuffle(operations)[0];
-		const cageIdx = cagesN.indexOf(cage);
+		const cageIdx = cagesNum.indexOf(cage);
+		const currentColor = colors[Math.floor(Math.random() * colors.length)];
 
 		data.push({
 			anchor: arr[cageIdx].sort((a, b) => a - b)[0],
 			cage: cages[cageIdx],
-			color:
-				CSS_COLOR_NAMES[Math.floor(Math.random() * CSS_COLOR_NAMES.length)],
+			color: currentColor,
 			idx: arr[cageIdx],
 			op: ops[`${op.name}`],
 			solutions: getSolutions(op(cage), op.name, cage.length, n),
 			value: Number.isInteger(op(cage)) && op(cage),
 		});
+
+		colors.splice(colors.indexOf(currentColor), 1);
 	}
 
 	return data;

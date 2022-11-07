@@ -4,7 +4,7 @@ import { easy, intermediate, hard, expert } from './puzzles.js';
 /* 
 There are six operations you can apply to every valid sudoku that will transform it to a new, distinct, valid puzzle. These are: swapping the bands (groups of three rows), swapping the rows within the bands, swapping the stacks (groups of three columns), swapping the columns within the stacks, relabeling (e.g., all 1s become 7s, all 2s become 4s, etc.), and some form of puzzle flipping. In this case, flipping means reflection, transposition, or rotation; however, when used in combination with the other operations, only one flipping method will yield a unique output. This function uses a quarter-turn rotation for that purpose. 
 
-These operations in tandem produce many viable symmetries from each seed. The total number of permutations is 3!⁸ (swapping) * 9! (relabeling) * 2 (rotation), or ~1.2 trillion isomorphic puzzles. Since the user will only ever experience a very small fraction of those, in this function I want to prioritize visual contrast among the generated puzzles. To that end, each symmetry will always be relabeled and perform at least one of the remaining five operations. This reduces the total number of possible symmetries but can be balanced by generating puzzles from multiple seeds.
+These operations in tandem produce many viable symmetries from each seed. The total number of permutations is (3!)⁸ (swapping) * 9! (relabeling) * 2 (rotation), or ~1.2 trillion isomorphic puzzles. Since the user will only ever experience a very small fraction of those, in this function I want to prioritize visual contrast among the generated puzzles. To that end, each symmetry will always be relabeled and perform at least one of the remaining five operations. This reduces the total number of possible symmetries but can be balanced by generating puzzles from multiple seeds.
 */
 
 // ----------------------------------------------------------------
@@ -43,7 +43,7 @@ const createSymmetry = str => {
 // 						SYMMETRY OPERATIONS
 // ----------------------------------------------------------------
 
-// Randomly swap seed numbers (9! permutations)
+// Randomly swap seed numbers: 9! permutations
 const relabel = arr => {
 	const digits = shuffle(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
 	const labels = {};
@@ -80,11 +80,11 @@ const rotate = arr => {
 	return temp;
 };
 
-// Randomly swap bands (3! permutations)
+// Randomly swap bands: 3! permutations
 const swapBand = arr =>
 	shuffle([arr.slice(0, 3), arr.slice(3, 6), arr.slice(6)]).flat();
 
-// Randomly swap columns within a stack (3!³ permutations)
+// Randomly swap columns within a stack: (3!)³ permutations
 const swapCol = arr => {
 	arr = rotate(arr);
 	arr = swapRow(arr);
@@ -92,7 +92,7 @@ const swapCol = arr => {
 	return arr;
 };
 
-// Randomly swap rows within a band (3!³ permutations)
+// Randomly swap rows within a band: (3!)³ permutations
 const swapRow = arr =>
 	[
 		shuffle(arr.slice(0, 3)),
@@ -100,7 +100,7 @@ const swapRow = arr =>
 		shuffle(arr.slice(6)),
 	].flat();
 
-// Randomly swap stacks (3! permutations)
+// Randomly swap stacks: 3! permutations
 const swapStack = arr => {
 	arr = rotate(arr);
 	arr = swapBand(arr);
