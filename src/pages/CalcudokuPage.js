@@ -7,15 +7,15 @@ import { Button, Col, Container, Row } from 'react-bootstrap';
 import CalcGrid from '../components/calcudoku/CalcGrid';
 import CalcModal from '../components/calcudoku/CalcModal';
 import Solutions from '../components/calcudoku/Solutions';
-import AnswerInset from '../components/AnswerInset';
-import AnswerBar from '../components/AnswerBar';
-import AnswerGrid from '../components/AnswerGrid';
-import AnswerGridEnhanced from '../components/AnswerGridEnhanced';
 
 // Logic
 import { generate } from '../modules/calcudoku.js';
 
 export default function CalcudokuPage() {
+	// ----------------------------------------------------------------
+	//                          PUZZLE GENERATION
+	// ----------------------------------------------------------------
+
 	const [size, setSize] = useState('4');
 	const [puzzle, setPuzzle] = useState();
 
@@ -25,15 +25,34 @@ export default function CalcudokuPage() {
 		setAnswer(Array(Math.pow(size, 2)).fill('0'));
 	};
 
-	// Display solutions element on clicking a cage
-	const [solutions, setSolutions] = useState();
-	const handleSolutions = cageIdx => {
-		const solutionArr = Number.isInteger(cageIdx)
-			? puzzle.cages[cageIdx].solutions
-			: [];
+	// ----------------------------------------------------------------
+	//                          SOLUTIONS PANEL
+	// ----------------------------------------------------------------
 
-		setSolutions(solutionArr.length > 0 ? solutionArr : null);
+	// Handle locking/unlocking solution display to one cage
+	const [locked, setLocked] = useState(false);
+	const [lockedSolution, setLockedSolution] = useState(null);
+	const handleLockSolution = cageIdx => {
+		setLocked(!locked);
+
+		setLockedSolution(
+			Number.isInteger(cageIdx) ? puzzle.cages[cageIdx].solutions : null
+		);
 	};
+
+	// Display solutions element by hovering over a cage
+	const [solutionsData, setSolutionsData] = useState();
+	const handleSolutions = cageIdx =>
+		setSolutionsData({
+			cageIdx: cageIdx,
+			lockedSolution: lockedSolution,
+			solutions: Number.isInteger(cageIdx)
+				? puzzle.cages[cageIdx].solutions
+				: [],
+		});
+	// ----------------------------------------------------------------
+	// 						USER SUBMITTED ANSWERS
+	// ----------------------------------------------------------------
 
 	// Modify answer array
 	const [answer, setAnswer] = useState();
@@ -49,6 +68,7 @@ export default function CalcudokuPage() {
 		setAnswer(temp);
 	};
 
+	// Maintain object of invalid answers for each row and column
 	const [invalidButtons, setInvalidButtons] = useState({});
 	const handleButtons = (btnNum, cellIdx) => {
 		const rowIdx = Math.floor(cellIdx / size);
@@ -78,6 +98,27 @@ export default function CalcudokuPage() {
 		setInvalidButtons(temp);
 	};
 
+	// Handle number elimination via right click
+	const [eliminatedNumbers, setEliminatedNumbers] = useState({});
+	const handleEliminateNumber = (btnNum, cellIdx) => {
+		const arr = eliminatedNumbers[cellIdx] ? eliminatedNumbers[cellIdx] : [];
+
+		const temp = { ...eliminatedNumbers };
+
+		// Toggle eliminated state by adding or removing button number
+		arr.includes(btnNum)
+			? arr.splice(arr.indexOf(btnNum), 1)
+			: arr.push(btnNum);
+
+		temp[cellIdx] = arr;
+
+		setEliminatedNumbers(temp);
+	};
+
+	// ----------------------------------------------------------------
+	// 						MISC. / TODO
+	// ----------------------------------------------------------------
+
 	// TODO: implement solve button
 	// Solve state
 	const [solved, setSolved] = useState(false);
@@ -99,24 +140,28 @@ export default function CalcudokuPage() {
 						<CalcGrid
 							answer={answer}
 							cages={puzzle.cages}
-							// focusedCell={focusedCell}
-							handleAnswer={handleAnswer}
-							// handleFocus={handleFocus}
-							handleSolutions={handleSolutions}
+							eliminated={eliminatedNumbers}
 							invalid={invalidButtons}
+							locked={locked}
 							puzzle={puzzle.puzzleStr}
 							size={size}
 							solved={solved}
+							// Handlers
+							handleAnswer={handleAnswer}
+							handleEliminateNumber={handleEliminateNumber}
+							handleLockSolution={handleLockSolution}
+							handleSolutions={handleSolutions}
 						/>
 					)}
 				</Col>
 
 				{/* Display solutions on hover */}
-				<Col>{solutions && <Solutions solutions={solutions} />}</Col>
+				<Col>
+					{solutionsData && (
+						<Solutions invalid={invalidButtons} solutionsData={solutionsData} />
+					)}
+				</Col>
 			</Row>
-
-			{/* <AnswerGrid size={size} /> */}
-			{/* <AnswerGridEnhanced size={size} /> */}
 		</Container>
 	);
 }
