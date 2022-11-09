@@ -164,8 +164,6 @@ const CSS_COLOR_NAMES = [
 	// 'YellowGreen',
 ];
 
-console.log(CSS_COLOR_NAMES.length);
-
 const CSS_COLOR_CODES = [
 	'f0f8ff',
 	'faebd7',

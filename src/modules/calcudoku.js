@@ -349,14 +349,16 @@ const selectOps = (arr, str, n) => {
 		const op = shuffle(operations)[0];
 		const cageIdx = cagesNum.indexOf(cage);
 		const currentColor = colors[Math.floor(Math.random() * colors.length)];
+		const solutions = getSolutions(op(cage), op.name, cage.length, n);
 
 		data.push({
 			anchor: arr[cageIdx].sort((a, b) => a - b)[0],
 			cage: cages[cageIdx],
 			color: currentColor,
 			idx: arr[cageIdx],
+			lockable: solutions.length > 1,
 			op: ops[`${op.name}`],
-			solutions: getSolutions(op(cage), op.name, cage.length, n),
+			solutions: solutions,
 			value: Number.isInteger(op(cage)) && op(cage),
 		});
 

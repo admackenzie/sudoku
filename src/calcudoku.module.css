@@ -9,6 +9,15 @@
 	border: 1px solid var(--cageColor);
 }
 
+.hidden {
+	display: none;
+}
+
+.lockIcon {
+	height: 1rem;
+	cursor: pointer;
+}
+
 .numberButton {
 	/* Eliminated via right click (active state) */
 	--bs-btn-active-bg: transparent;
@@ -19,13 +28,12 @@
 	--bs-btn-disabled-border-color: transparent;
 	--bs-btn-disabled-color: transparent;
 
-	/* background-color: transparent; */
 	margin: 0;
 	padding: 0;
 }
 
 .numberButton:hover {
-	--bs-btn-bg: var(--cageColor);
+	--bs-btn-bg: transparent;
 
 	opacity: 0.5;
 }
@@ -33,11 +41,18 @@
 .undoButton {
 	font-size: 95%;
 	opacity: 0.1;
-	/* transition: 0.1s ease-in; */
 }
 
 .undoButton:hover {
 	font-size: 100%;
 	opacity: 0.2;
-	/* transition: 0.2s ease-in; */
+}
+
+.possibleSolution {
+	color: limegreen;
+	/* cursor: pointer; */
+}
+
+.eliminatedSolution {
+	color: gray;
 }

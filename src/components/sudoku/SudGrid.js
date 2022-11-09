@@ -9,7 +9,7 @@ export default function SudGrid({ ...props }) {
 		// Grid style
 		<Container
 			className="border border-dark border-5"
-			style={{ maxWidth: '52rem' }}
+			// style={{ maxWidth: '52rem' }}
 		>
 			{[0, 3, 6].map(gridRow => {
 				return (

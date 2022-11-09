@@ -6,7 +6,11 @@ import CalcCell from './CalcCell';
 
 export default function CalcGrid({ ...props }) {
 	return (
-		<Container className="border border-dark border-5 text-center">
+		<Container
+			className="border border-dark border-5 text-center"
+			// FIXME: better way to do this?
+			style={{ maxWidth: `${+props.size * 8}rem` }}
+		>
 			{[...Array(+props.size).keys()].map(row => {
 				return (
 					<Row key={row}>

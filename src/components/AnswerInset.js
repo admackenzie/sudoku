@@ -19,13 +19,6 @@ export default function AnswerInset({ ...props }) {
 		(invalidRowIdx && invalidRowIdx.includes(btnNum)) ||
 		(invalidColIdx && invalidColIdx.includes(btnNum));
 
-	// const cageColor = props.color['color']
-	// 	.match(/.{1,2}/g)
-	// 	.map(byte => parseInt(byte, 16))
-	// 	.join(' ');
-
-	// console.log(cageColor);
-
 	// Calculate numbers for each row based on puzzle size
 	const calcRow = row => {
 		// First row: display three buttons for sizes 5, 6, and 9, else four buttons
@@ -47,27 +40,28 @@ export default function AnswerInset({ ...props }) {
 	};
 
 	// Handle number elimination via right click
-	const [eliminatedNumbers, setEliminatedNumbers] = useState([]);
 	const handleEliminateNumber = (btnNum, e) => {
-		const temp = [...eliminatedNumbers];
-
-		// Toggle eliminated state by adding or removing button number
-		temp.includes(btnNum)
-			? temp.splice(temp.indexOf(btnNum), 1)
-			: temp.push(btnNum);
-
-		setEliminatedNumbers(temp);
+		props.handleEliminateNumber(btnNum, props.cellIdx);
 
 		// Prevent default context menu on right click
 		e.preventDefault();
 	};
 
-	// Submit answer if button value is not eliminated
-	const handleEnterAnswer = btnNum =>
-		!eliminatedNumbers.includes(+btnNum) &&
-		props.handleAnswer(btnNum, props.cellIdx);
+	const handleEnterAnswer = btnNum => {
+		// Prevent submitting eliminated numbers as an answer
+		if (
+			props.eliminated[props.cellIdx] &&
+			props.eliminated[props.cellIdx].includes(+btnNum)
+		)
+			return false;
 
-	// FIXME: button active state CSS overrides disabled state (if button is eliminated before the same number in the row or col is selected, the color stays grayed out instead of invisible)
+		props.handleAnswer(btnNum, props.cellIdx);
+	};
+
+	/* 
+		FIXME: 
+		- button active state CSS overrides disabled state (if button is eliminated before the same number in the row or col is selected, the color stays grayed out instead of invisible). May need to switch to active buttons by default, and right clicking to eliminate makes them inactive
+	*/
 
 	// Dynamically set custom CSS variable to cage color
 	useEffect(
@@ -90,7 +84,7 @@ export default function AnswerInset({ ...props }) {
 							key={row}
 							// size="sm"
 							type="checkbox"
-							value={eliminatedNumbers}
+							value={props.eliminated[props.cellIdx]}
 						>
 							{calcRow(row).map(btnNum => {
 								return (
