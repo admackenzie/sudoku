@@ -42,14 +42,47 @@ export default function CalcudokuPage() {
 
 	// Display solutions element by hovering over a cage
 	const [solutionsData, setSolutionsData] = useState();
-	const handleSolutions = cageIdx =>
+	const handleSolutions = (cageIdx, cellIdx) =>
 		setSolutionsData({
 			cageIdx: cageIdx,
+			cellIdx: cellIdx,
+			invalidSolutions: invalidSolutions,
 			lockedSolution: lockedSolution,
 			solutions: Number.isInteger(cageIdx)
 				? puzzle.cages[cageIdx].solutions
 				: [],
+			straight: puzzle.cages[cageIdx] && puzzle.cages[cageIdx].straight,
 		});
+
+	const [invalidSolutions, setInvalidSolutions] = useState({});
+	const handleInvalidSolutions = (btnNum, cellIdx) => {
+		const rowIdx = Math.floor(cellIdx / size);
+		const colIdx = cellIdx % size;
+
+		const row = invalidSolutions[`row${rowIdx}`]
+			? invalidSolutions[`row${rowIdx}`]
+			: [];
+
+		const col = invalidSolutions[`col${colIdx}`]
+			? invalidSolutions[`col${colIdx}`]
+			: [];
+
+		const temp = { ...invalidSolutions };
+
+		row.includes(btnNum)
+			? row.splice(row.indexOf(btnNum), 1)
+			: row.push(btnNum);
+
+		col.includes(btnNum)
+			? col.splice(col.indexOf(btnNum), 1)
+			: col.push(btnNum);
+
+		temp[`row${rowIdx}`] = row;
+		temp[`col${colIdx}`] = col;
+
+		setInvalidSolutions(temp);
+	};
+
 	// ----------------------------------------------------------------
 	// 						USER SUBMITTED ANSWERS
 	// ----------------------------------------------------------------
@@ -58,9 +91,15 @@ export default function CalcudokuPage() {
 	const [answer, setAnswer] = useState();
 	const handleAnswer = (btnNum, cellIdx) => {
 		// Handle number buttons display
+
 		btnNum === '0'
 			? handleButtons(answer[cellIdx], cellIdx)
 			: handleButtons(btnNum, cellIdx);
+
+		// Handle solutions color display
+		btnNum === '0'
+			? handleInvalidSolutions(answer[cellIdx], cellIdx)
+			: handleInvalidSolutions(btnNum, cellIdx);
 
 		const temp = [...answer];
 		temp.splice(cellIdx, 1, btnNum);
@@ -158,7 +197,7 @@ export default function CalcudokuPage() {
 				{/* Display solutions on hover */}
 				<Col>
 					{solutionsData && (
-						<Solutions invalid={invalidButtons} solutionsData={solutionsData} />
+						<Solutions solutionsData={solutionsData} size={size} />
 					)}
 				</Col>
 			</Row>

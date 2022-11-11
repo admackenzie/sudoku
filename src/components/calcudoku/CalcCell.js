@@ -17,7 +17,8 @@ export default function CalcCell({ ...props }) {
 	const cageIdx = props.cages.findIndex(cage =>
 		cage.idx.includes(props.cellIdx)
 	);
-	const { anchor, color, lockable, op, value } = props.cages[cageIdx];
+	const { anchor, borderData, color, lockable, op, value } =
+		props.cages[cageIdx];
 	const cellVal = props.answer[props.cellIdx];
 	const re = new RegExp(`\\b[1-${props.size}]\\b`);
 	const answered = re.test(cellVal);
@@ -31,17 +32,41 @@ export default function CalcCell({ ...props }) {
 	};
 
 	/*  
-		TODO:
+		TODO: 
+		- Apply style to all cells in a cage on mouse enter (useEffect?)
+		- Use borderData to only add border to outside of cages
+		- Button backgrounds visible on cage hover. Different color for eliminated answers
+		- Make eliminated numbers count toward invalidating solutions. The cage should check both the eliminated numbers object and the invalid numbers object for each of its cells. If every cell in the cage is in a row or column that contains the same invalid number, change the class of all solutions that have that number.
+		- Implement inequality (and more broadly, cages larger than size 4) 
+		
+		Maybes:
 		- Lock icons only appear when hovering a cage
 		- Lock icons appear in anchor cell when hovering any cell in the cage
 	*/
 
+	// const [currentCage, setCurrentCage] = useState();
+	// const handleMouseIn = () => {
+	// 	!props.locked && props.handleSolutions(cageIdx, props.cellIdx);
+
+	// 	setCurrentCage(props.cages[cageIdx].idx);
+
+	// 	console.log(currentCage);
+	// };
+
+	// const handleMouseOut = () => {
+	// 	!props.locked && props.handleSolutions(null, null);
+
+	// 	setCurrentCage(props.cages[cageIdx].idx);
+	// };
+
 	return (
 		<Col
-			className={`${classes.cell} border border-dark border-2 p-1 `}
+			className={`${classes.cell} p-1`}
 			// Load appropriate cage solutions on mouse movement. Disabled when a cage is locked
-			onMouseEnter={() => !props.locked && props.handleSolutions(cageIdx)}
-			onMouseLeave={() => !props.locked && props.handleSolutions(null)}
+			onMouseEnter={() =>
+				!props.locked && props.handleSolutions(cageIdx, props.cellIdx)
+			}
+			onMouseLeave={() => !props.locked && props.handleSolutions(null, null)}
 			// FIXME: get this to work with useEffect instead of hard-coded style
 			style={{ backgroundColor: color }}
 		>
@@ -74,7 +99,7 @@ export default function CalcCell({ ...props }) {
 				{/* Cell body */}
 				<div className="position-relative">
 					<Form.Control
-						className={`${classes.cell} fs-1 text-center`}
+						className={`${classes.cellContent} fs-1 text-center`}
 						defaultValue={answered ? cellVal : ''}
 						disabled
 					></Form.Control>
