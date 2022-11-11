@@ -2,8 +2,12 @@
 	--cageColor: #fff;
 }
 
-.cell,
-.cell:disabled,
+.cell {
+	border: 1px solid #000;
+}
+
+.cellContent,
+.cellContent:disabled,
 .numberButton {
 	background-color: var(--cageColor);
 	border: 1px solid var(--cageColor);
@@ -50,9 +54,14 @@
 
 .possibleSolution {
 	color: limegreen;
-	/* cursor: pointer; */
+	cursor: pointer;
 }
 
 .eliminatedSolution {
 	color: gray;
+	cursor: pointer;
+}
+
+.invalidSolution {
+	color: red;
 }

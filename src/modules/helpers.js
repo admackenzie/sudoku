@@ -13,6 +13,16 @@ const shuffle = arr => {
 	return arr;
 };
 
+// Calculate a weighted random value from an array of outcomes and an array of weights, ordered to match. Omitting the weights argument returns a true random outcome
+const weightedRandom = (outcomes, weights = [...outcomes].fill(1)) => {
+	const cumulativeWeights = weights.map((v, i, arr) =>
+		arr.slice(0, i).reduce((a, b) => a + b, v)
+	);
+	const random = Math.floor(Math.random() * Math.max(...cumulativeWeights));
+
+	return outcomes[cumulativeWeights.findIndex(v => v > random)];
+};
+
 const CSS_COLOR_NAMES = [
 	'AliceBlue',
 	'AntiqueWhite',
@@ -310,4 +320,4 @@ const CSS_COLOR_CODES = [
 	'9acd32',
 ];
 
-export { CSS_COLOR_NAMES, format, shuffle };
+export { CSS_COLOR_NAMES, format, shuffle, weightedRandom };

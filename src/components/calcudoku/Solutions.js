@@ -7,12 +7,13 @@ import classes from '../../calcudoku.module.css';
 import { Container, Stack } from 'react-bootstrap';
 
 export default function Solutions({ ...props }) {
-	// Prioritize displaying the locked solution if it exists, else the full solutions array
-	const solutions = props.solutionsData.lockedSolution
-		? props.solutionsData.lockedSolution
-		: props.solutionsData.solutions;
+	const { cageIdx, cellIdx, invalidSolutions, lockedSolution, straight } =
+		props.solutionsData;
 
-	const cageIdx = props.solutionsData.cageIdx;
+	// Prioritize displaying the locked solution if it exists, else the full solutions array
+	const solutions = lockedSolution
+		? lockedSolution
+		: props.solutionsData.solutions;
 
 	// Create an object with a key : value structure of cage indices : arrays containing the eliminated solutions
 	const [eliminatedSolutions, setEliminatedSolutions] = useState({});
@@ -45,6 +46,32 @@ export default function Solutions({ ...props }) {
 		eliminatedSolutions[cageIdx] &&
 		eliminatedSolutions[cageIdx].includes(solutions[i]);
 
+	// ----------------------------------------------------------------
+
+	const invalidRowIdx =
+		invalidSolutions[`row${Math.floor(cellIdx / props.size)}`];
+	const invalidColIdx = invalidSolutions[`col${cellIdx % props.size}`];
+
+	/* 
+		When solutions should be invalid:
+		- 
+	*/
+
+	const invalid = i => {
+		// Create array of only the single digit numbers in the solution
+		const digits = solutions[i].split(' ').filter(v => /\b\d\b/.test(v));
+
+		// if (invalidRowIdx) {
+		// 	return invalidRowIdx.some(v => solutions[i].split(' ').includes(v));
+		// }
+		// if (invalidColIdx) {
+		// 	return invalidColIdx.some(v => solutions[i].split(' ').includes(v));
+		// }
+
+		// Straight cages cannot have duplicate numbers in their solutions
+		return straight && digits.length !== new Set(digits).size;
+	};
+
 	return (
 		// Prevent rendering of empty solutions container
 		solutions.length > 0 && (
@@ -54,7 +81,9 @@ export default function Solutions({ ...props }) {
 						return (
 							<div
 								className={`${
-									eliminated(n)
+									invalid(n)
+										? classes.invalidSolution
+										: eliminated(n)
 										? classes.eliminatedSolution
 										: classes.possibleSolution
 								}`}

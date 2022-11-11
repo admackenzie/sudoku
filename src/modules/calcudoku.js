@@ -1,4 +1,4 @@
-import { CSS_COLOR_NAMES, format, shuffle } from './helpers.js';
+import { CSS_COLOR_NAMES, format, shuffle, weightedRandom } from './helpers.js';
 
 /* 
 This function generates the data needed for a calcudoku puzzle. Calcudoku is a sudoku variant that partitions the puzzle grid into "cages" rather than rows, columns, and boxes. Each cage gives the result of a mathematical operation and what operation was used; the player must then deduce which numbers are possible in the cage. Like sudoku, there will be no number repeats in any row or column, but due to the shapes of the cages multiple possible grid sizes, there are no boxes to help in finding the solution.
@@ -54,9 +54,19 @@ const buildCages = n => {
 	const cages = [];
 	let anchor = 0;
 
+	// Key: puzzle size, value: weights for size 2, 3, and 4 cages
+	const cageSizeWeights = {
+		4: [6, 3, 1],
+		5: [6, 3, 1],
+		6: [4, 3, 3],
+		7: [4, 3, 3],
+		8: [2, 4, 4],
+		9: [2, 4, 4],
+	};
+
 	while (arr.filter(Boolean).length > 0) {
-		// Generate cage sized 2 to 4
-		const cageSize = Math.floor(Math.random() * 3) + 2;
+		// Generate a cage with a weighted random size of 2, 3, or 4
+		const cageSize = weightedRandom([2, 3, 4], cageSizeWeights[n]);
 		let cage = [];
 
 		for (let i = 0; i < cageSize; i++) {
@@ -286,13 +296,14 @@ const selectOps = (arr, str, n) => {
 	const sub = arr => arr.reduce((a, b) => b - a);
 	const mul = arr => arr.reduce((a, b) => b * a);
 	const div = arr => arr.reduce((a, b) => b / a);
-	const evn = arr => arr.every(n => n % 2 === 0);
-	const odd = arr => arr.every(n => n % 2 !== 0);
-	const equ = n => n[0];
-	const seq = arr =>
-		arr.every((n, i, a) =>
-			i === a.length - 1 ? n === a[i - 1] + 1 : n === a[i + 1] - 1
-		);
+	const evn = arr => arr.every(v => v % 2 === 0);
+	const odd = arr => arr.every(v => v % 2 !== 0);
+	const equ = v => v[0];
+	const seq = (arr, diff = 1) =>
+		arr
+			.slice(1)
+			.map((v, i) => v - arr[i])
+			.every(v => v === diff);
 
 	// Convert cages of indices to cages of puzzle values
 	const cages = arr.map(cage => cage.map(n => str[n]));
@@ -302,9 +313,7 @@ const selectOps = (arr, str, n) => {
 		cage.map(n => +str[n]).sort((a, b) => a - b)
 	);
 
-	const data = [];
-
-	const ops = {
+	const opSymbol = {
 		add: '+',
 		sub: '-',
 		mul: 'x',
@@ -316,6 +325,44 @@ const selectOps = (arr, str, n) => {
 	};
 
 	const colors = [...CSS_COLOR_NAMES];
+
+	// Apply special designation to size 3 and 4 cages that will appear as straight lines on the grid. They have special requirements for eliminating impossible solutions.
+	const straightCages = [];
+	arr
+		.filter(cage => cage.length > 2)
+		.map(cage => cage.sort((a, b) => a - b))
+		.forEach(cage => {
+			// Test for horizontal and vertical straight cages
+			if (seq(cage) || seq(cage, n)) straightCages.push(cage);
+		});
+
+	// For each cell, determine which border sides should be omitted when highlighting its cage and append the corresponding Bootstrap class name
+	const borderData = [];
+	for (let i = 0; i < Math.pow(n, 2); i++) {
+		const cage = arr
+			.filter(a => a.includes(i))
+			.flat()
+			.sort((a, b) => a - b);
+
+		let local = [];
+
+		if (cage.length === 2) {
+			i === cage[0]
+				? local.push(cage[1] - cage[0] === 1 ? 'end' : 'bottom')
+				: local.push(cage[1] - cage[0] === 1 ? 'start' : 'top');
+		} else {
+			// Test for omission in  N → E → S → W direction
+			if (cage.includes(i - n)) local.push('top');
+			if (cage.includes(i + 1)) local.push('end');
+			if (cage.includes(i + n)) local.push('bottom');
+			if (cage.includes(i - 1)) local.push('start');
+		}
+
+		borderData.push(local.map(v => `border-${v}-0`).sort());
+		local = [];
+	}
+
+	const data = [];
 
 	// Determine valid operations for each cage
 	for (let cage of cagesNum) {
@@ -353,12 +400,14 @@ const selectOps = (arr, str, n) => {
 
 		data.push({
 			anchor: arr[cageIdx].sort((a, b) => a - b)[0],
+			borderData: borderData,
 			cage: cages[cageIdx],
 			color: currentColor,
 			idx: arr[cageIdx],
 			lockable: solutions.length > 1,
-			op: ops[`${op.name}`],
+			op: opSymbol[`${op.name}`],
 			solutions: solutions,
+			straight: straightCages.includes(arr[cageIdx]),
 			value: Number.isInteger(op(cage)) && op(cage),
 		});
 

@@ -12,6 +12,7 @@ import {
 
 export default function AnswerInset({ ...props }) {
 	const n = +props.size || 9;
+
 	const invalidRowIdx = props.invalid[`row${Math.floor(props.cellIdx / n)}`];
 	const invalidColIdx = props.invalid[`col${props.cellIdx % n}`];
 
