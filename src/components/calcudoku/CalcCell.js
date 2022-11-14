@@ -17,8 +17,7 @@ export default function CalcCell({ ...props }) {
 	const cageIdx = props.cages.findIndex(cage =>
 		cage.idx.includes(props.cellIdx)
 	);
-	const { anchor, borderData, color, lockable, op, value } =
-		props.cages[cageIdx];
+	const { anchor, color, lockable, op, value } = props.cages[cageIdx];
 	const cellVal = props.answer[props.cellIdx];
 	const re = new RegExp(`\\b[1-${props.size}]\\b`);
 	const answered = re.test(cellVal);
@@ -34,39 +33,58 @@ export default function CalcCell({ ...props }) {
 	/*  
 		TODO: 
 		- Apply style to all cells in a cage on mouse enter (useEffect?)
-		- Use borderData to only add border to outside of cages
 		- Button backgrounds visible on cage hover. Different color for eliminated answers
 		- Make eliminated numbers count toward invalidating solutions. The cage should check both the eliminated numbers object and the invalid numbers object for each of its cells. If every cell in the cage is in a row or column that contains the same invalid number, change the class of all solutions that have that number.
 		- Implement inequality (and more broadly, cages larger than size 4) 
+		- Find a better place for the undo button
 		
 		Maybes:
 		- Lock icons only appear when hovering a cage
 		- Lock icons appear in anchor cell when hovering any cell in the cage
 	*/
 
-	// const [currentCage, setCurrentCage] = useState();
-	// const handleMouseIn = () => {
-	// 	!props.locked && props.handleSolutions(cageIdx, props.cellIdx);
+	const handleMouseEnter = () => {
+		if (!props.locked) {
+			// Cage highlight functionality. Apply cell-specific border styles to all borders of all cells within the hovered cage
+			props.cages[cageIdx].idx.forEach(i => {
+				document.getElementById(`cell-${i}`).style.boxShadow =
+					props.borderData[i];
+			});
 
-	// 	setCurrentCage(props.cages[cageIdx].idx);
+			// Bubble up cage data to display solutions for the hovered cage
+			props.handleSolutions(cageIdx, props.cellIdx);
+		}
+	};
 
-	// 	console.log(currentCage);
-	// };
+	const handleMouseLeave = () => {
+		if (!props.locked) {
+			// Restore default border styles when mouse leaves a cage
+			props.cages[cageIdx].idx.forEach(i => {
+				document.getElementById(`cell-${i}`).style.boxShadow =
+					props.borderData['borderDefault'];
+			});
 
-	// const handleMouseOut = () => {
-	// 	!props.locked && props.handleSolutions(null, null);
+			// Clear solutions display when changing cages or the mouse leaves the grid
+			props.handleSolutions(null, null);
+		}
+	};
 
-	// 	setCurrentCage(props.cages[cageIdx].idx);
-	// };
+	// Apply global default border settings to CSS variable
+	useEffect(
+		() =>
+			document.documentElement.style.setProperty(
+				'--borderDefault',
+				`${props.borderData['borderDefault']}`
+			),
+		[props.borderData]
+	);
 
 	return (
 		<Col
 			className={`${classes.cell} p-1`}
-			// Load appropriate cage solutions on mouse movement. Disabled when a cage is locked
-			onMouseEnter={() =>
-				!props.locked && props.handleSolutions(cageIdx, props.cellIdx)
-			}
-			onMouseLeave={() => !props.locked && props.handleSolutions(null, null)}
+			id={`cell-${props.cellIdx}`}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
 			// FIXME: get this to work with useEffect instead of hard-coded style
 			style={{ backgroundColor: color }}
 		>

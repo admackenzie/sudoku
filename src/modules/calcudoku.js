@@ -1,4 +1,10 @@
-import { CSS_COLOR_NAMES, format, shuffle, weightedRandom } from './helpers.js';
+import {
+	BORDER_DEFAULT,
+	BORDER_HIGHLIGHT,
+	CSS_COLOR_NAMES,
+} from './globalVariables.js';
+
+import { format, shuffle, weightedRandom } from './helpers.js';
 
 /* 
 This function generates the data needed for a calcudoku puzzle. Calcudoku is a sudoku variant that partitions the puzzle grid into "cages" rather than rows, columns, and boxes. Each cage gives the result of a mathematical operation and what operation was used; the player must then deduce which numbers are possible in the cage. Like sudoku, there will be no number repeats in any row or column, but due to the shapes of the cages multiple possible grid sizes, there are no boxes to help in finding the solution.
@@ -20,8 +26,10 @@ Lastly, buildCages returns the indices necessary to implement the cage structure
 const generate = n => {
 	// console.time('Time');
 
+	const cageIndices = buildCages(n);
 	const puzzle = createLS(n);
-	const cages = selectOps(buildCages(n), puzzle, n);
+	const borderData = calcBorderData(cageIndices, n);
+	const cages = selectOps(cageIndices, puzzle, n);
 
 	// Final sanity check
 	if (!errorCheck(puzzle, cages, n)) {
@@ -38,7 +46,7 @@ const generate = n => {
 	// console.log(format(puzzle, n), indices);
 	// console.log(cages);
 
-	return { cages: cages, puzzleStr: puzzle };
+	return { borderData: borderData, cages: cages, puzzleStr: puzzle };
 };
 
 // ----------------------------------------------------------------
@@ -99,6 +107,73 @@ const buildCages = n => {
 		[...Array(Math.pow(n, 2)).keys()].every(v => cages.flat().includes(v))
 		? cages
 		: false;
+};
+
+// ----------------------------------------------------------------
+
+// Calculate border data for each puzzle cell for proper cage highlighting. Takes the array of cage index arrays and the puzzle size as arguments
+const calcBorderData = (arr, n) => {
+	// Convert the global box shadow variable into one side's border by assigning the spread value to the side's corresponding x/y value
+	const configureBorder = (side, shadow = BORDER_HIGHLIGHT) => {
+		let [inset, offsetX, offsetY, blur, spread, color] = shadow.split(' ');
+
+		if (side === 'bottom') offsetY = `-${parseInt(spread)}px`;
+		else if (side === 'left') offsetX = spread;
+		else if (side === 'right') offsetX = `-${parseInt(spread)}px`;
+		else if (side === 'top') offsetY = spread;
+
+		return [inset, offsetX, offsetY, blur, 0, color].join(' ');
+	};
+
+	const borderData = {};
+
+	// Create an object for each cell in the puzzle. Key: cell index, value: string of four box shadows comprising the cell's border
+	for (let i = 0; i < Math.pow(n, 2); i++) {
+		// Isolate cage that includes current loop index
+		const cage = arr
+			.filter(a => a.includes(i))
+			.flat()
+			.sort((a, b) => a - b);
+
+		// Object with fully highlighted borders from which borders will be subtracted
+		const template = {
+			bottom: configureBorder('bottom'),
+			left: configureBorder('left'),
+			right: configureBorder('right'),
+			top: configureBorder('top'),
+		};
+
+		let omitted = [];
+
+		// Omit borders along grid border
+		if (i < n) omitted.push('top');
+		if (i % n === 0) omitted.push('left');
+		if (i >= Math.pow(n, 2) - n) omitted.push('bottom');
+		if ((i + 1) % n === 0) omitted.push('right');
+
+		// Omit borders between cells in the same cage
+		if (cage.length === 2) {
+			i === cage[0]
+				? omitted.push(cage[1] - cage[0] === 1 ? 'right' : 'bottom')
+				: omitted.push(cage[1] - cage[0] === 1 ? 'left' : 'top');
+		} else {
+			if (cage.includes(i + n)) omitted.push('bottom');
+			if (cage.includes(i - 1)) omitted.push('left');
+			if (cage.includes(i + 1)) omitted.push('right');
+			if (cage.includes(i - n)) omitted.push('top');
+		}
+
+		// Turn all omitted borders back to the default
+		omitted.forEach(v => (template[v] = BORDER_DEFAULT));
+
+		// Concatenate all the box shadows into one string
+		borderData[i] = Object.values(template).join(', ');
+		omitted = [];
+	}
+
+	borderData['borderDefault'] = BORDER_DEFAULT;
+
+	return borderData;
 };
 
 // ----------------------------------------------------------------
@@ -336,32 +411,6 @@ const selectOps = (arr, str, n) => {
 			if (seq(cage) || seq(cage, n)) straightCages.push(cage);
 		});
 
-	// For each cell, determine which border sides should be omitted when highlighting its cage and append the corresponding Bootstrap class name
-	const borderData = [];
-	for (let i = 0; i < Math.pow(n, 2); i++) {
-		const cage = arr
-			.filter(a => a.includes(i))
-			.flat()
-			.sort((a, b) => a - b);
-
-		let local = [];
-
-		if (cage.length === 2) {
-			i === cage[0]
-				? local.push(cage[1] - cage[0] === 1 ? 'end' : 'bottom')
-				: local.push(cage[1] - cage[0] === 1 ? 'start' : 'top');
-		} else {
-			// Test for omission in  N → E → S → W direction
-			if (cage.includes(i - n)) local.push('top');
-			if (cage.includes(i + 1)) local.push('end');
-			if (cage.includes(i + n)) local.push('bottom');
-			if (cage.includes(i - 1)) local.push('start');
-		}
-
-		borderData.push(local.map(v => `border-${v}-0`).sort());
-		local = [];
-	}
-
 	const data = [];
 
 	// Determine valid operations for each cage
@@ -400,7 +449,6 @@ const selectOps = (arr, str, n) => {
 
 		data.push({
 			anchor: arr[cageIdx].sort((a, b) => a - b)[0],
-			borderData: borderData,
 			cage: cages[cageIdx],
 			color: currentColor,
 			idx: arr[cageIdx],
