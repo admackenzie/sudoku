@@ -178,6 +178,7 @@ export default function CalcudokuPage() {
 					{puzzle && (
 						<CalcGrid
 							answer={answer}
+							borderData={puzzle.borderData}
 							cages={puzzle.cages}
 							eliminated={eliminatedNumbers}
 							invalid={invalidButtons}
@@ -200,6 +201,17 @@ export default function CalcudokuPage() {
 						<Solutions solutionsData={solutionsData} size={size} />
 					)}
 				</Col>
+
+				{/* <div
+					style={{
+						marginTop: '5rem',
+						// Bottom: +y, top: -y, left: -x, right: +x
+						boxShadow:
+							'inset 0 1px 0 0 red, inset 0 -1px 0 0 red, inset -1px 0 0 0 red, inset 1px 0 0 0 red',
+						height: '200px',
+						width: '200px',
+					}}
+				></div> */}
 			</Row>
 		</Container>
 	);
