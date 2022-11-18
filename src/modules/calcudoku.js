@@ -1,10 +1,11 @@
 import {
 	BORDER_DEFAULT,
 	BORDER_HIGHLIGHT,
+	CAGE_SIZE_WEIGHTS,
 	CSS_COLOR_NAMES,
 } from './globalVariables.js';
 
-import { format, shuffle, weightedRandom } from './helpers.js';
+import { format, sequence, shuffle, weightedRandom } from './helpers.js';
 
 /* 
 This function generates the data needed for a calcudoku puzzle. Calcudoku is a sudoku variant that partitions the puzzle grid into "cages" rather than rows, columns, and boxes. Each cage gives the result of a mathematical operation and what operation was used; the player must then deduce which numbers are possible in the cage. Like sudoku, there will be no number repeats in any row or column, but due to the shapes of the cages multiple possible grid sizes, there are no boxes to help in finding the solution.
@@ -62,19 +63,9 @@ const buildCages = n => {
 	const cages = [];
 	let anchor = 0;
 
-	// Key: puzzle size, value: weights for size 2, 3, and 4 cages
-	const cageSizeWeights = {
-		4: [6, 3, 1],
-		5: [6, 3, 1],
-		6: [4, 3, 3],
-		7: [4, 3, 3],
-		8: [2, 4, 4],
-		9: [2, 4, 4],
-	};
-
 	while (arr.filter(Boolean).length > 0) {
 		// Generate a cage with a weighted random size of 2, 3, or 4
-		const cageSize = weightedRandom([2, 3, 4], cageSizeWeights[n]);
+		const cageSize = weightedRandom([2, 3, 4], CAGE_SIZE_WEIGHTS[n]);
 		let cage = [];
 
 		for (let i = 0; i < cageSize; i++) {
@@ -117,10 +108,10 @@ const calcBorderData = (arr, n) => {
 	const configureBorder = (side, shadow = BORDER_HIGHLIGHT) => {
 		let [inset, offsetX, offsetY, blur, spread, color] = shadow.split(' ');
 
-		if (side === 'bottom') offsetY = `-${parseInt(spread)}px`;
-		else if (side === 'left') offsetX = spread;
+		if (side === 'top') offsetY = spread;
 		else if (side === 'right') offsetX = `-${parseInt(spread)}px`;
-		else if (side === 'top') offsetY = spread;
+		else if (side === 'bottom') offsetY = `-${parseInt(spread)}px`;
+		else if (side === 'left') offsetX = spread;
 
 		return [inset, offsetX, offsetY, blur, 0, color].join(' ');
 	};
@@ -135,21 +126,21 @@ const calcBorderData = (arr, n) => {
 			.flat()
 			.sort((a, b) => a - b);
 
-		// Object with fully highlighted borders from which borders will be subtracted
+		// Object with fully highlighted borders from which unneeded borders will be subtracted
 		const template = {
+			top: configureBorder('top'),
+			right: configureBorder('right'),
 			bottom: configureBorder('bottom'),
 			left: configureBorder('left'),
-			right: configureBorder('right'),
-			top: configureBorder('top'),
 		};
 
 		let omitted = [];
 
 		// Omit borders along grid border
 		if (i < n) omitted.push('top');
-		if (i % n === 0) omitted.push('left');
-		if (i >= Math.pow(n, 2) - n) omitted.push('bottom');
 		if ((i + 1) % n === 0) omitted.push('right');
+		if (i >= Math.pow(n, 2) - n) omitted.push('bottom');
+		if (i % n === 0) omitted.push('left');
 
 		// Omit borders between cells in the same cage
 		if (cage.length === 2) {
@@ -157,17 +148,20 @@ const calcBorderData = (arr, n) => {
 				? omitted.push(cage[1] - cage[0] === 1 ? 'right' : 'bottom')
 				: omitted.push(cage[1] - cage[0] === 1 ? 'left' : 'top');
 		} else {
+			if (cage.includes(i - n)) omitted.push('top');
+			if (cage.includes(i + 1)) omitted.push('right');
 			if (cage.includes(i + n)) omitted.push('bottom');
 			if (cage.includes(i - 1)) omitted.push('left');
-			if (cage.includes(i + 1)) omitted.push('right');
-			if (cage.includes(i - n)) omitted.push('top');
 		}
 
-		// Turn all omitted borders back to the default
-		omitted.forEach(v => (template[v] = BORDER_DEFAULT));
+		// Convert all omitted borders to the default
+		omitted.forEach(side => {
+			template[side] = BORDER_DEFAULT;
+		});
 
-		// Concatenate all the box shadows into one string
+		// Concatenate all four box shadows into one string
 		borderData[i] = Object.values(template).join(', ');
+
 		omitted = [];
 	}
 
@@ -250,8 +244,9 @@ const errorCheck = (str, arr, n) => {
 
 // Return valid cardinal indices for v from a 2D array of size n x n
 const getCardinal = (v, n) => {
-	const isValid = (r, c) =>
-		r < 0 || c < 0 || r > n - 1 || c > n - 1 ? false : true;
+	// Prevent generation outside the boundaries of the grid
+	const isValid = (r, c) => r >= 0 && c >= 0 && r <= n - 1 && c <= n - 1;
+
 	const r = Math.floor(v / n);
 	const c = v % n;
 	const valid = [];
@@ -333,7 +328,7 @@ const getSolutions = (val, op, cageSize, puzzleSize) => {
 	}
 
 	// Sequence
-	else if (op === 'seq') {
+	else if (op === 'sequence') {
 		for (let i = 0; i < puzzleSize - cageSize + 1; i++)
 			solutions.push(
 				[...Array(puzzleSize).keys()].map(n => n + 1).slice(i, i + cageSize)
@@ -366,7 +361,7 @@ const selectOps = (arr, str, n) => {
 	// Check function argument for errors
 	if (!arr || !str) return false;
 
-	// Cages must sorted in ascending order for these operations to all work properly
+	// Possible mathematical operations to be performed on a cage. This list also includes the sequence function, imported from the helpers.js module. The cages must sorted in ascending order for these operations to all work properly
 	const add = arr => arr.reduce((a, b) => b + a);
 	const sub = arr => arr.reduce((a, b) => b - a);
 	const mul = arr => arr.reduce((a, b) => b * a);
@@ -374,11 +369,6 @@ const selectOps = (arr, str, n) => {
 	const evn = arr => arr.every(v => v % 2 === 0);
 	const odd = arr => arr.every(v => v % 2 !== 0);
 	const equ = v => v[0];
-	const seq = (arr, diff = 1) =>
-		arr
-			.slice(1)
-			.map((v, i) => v - arr[i])
-			.every(v => v === diff);
 
 	// Convert cages of indices to cages of puzzle values
 	const cages = arr.map(cage => cage.map(n => str[n]));
@@ -396,20 +386,20 @@ const selectOps = (arr, str, n) => {
 		evn: 'Even',
 		odd: 'Odd',
 		equ: '=',
-		seq: 'Seq',
+		sequence: 'Seq',
 	};
 
 	const colors = [...CSS_COLOR_NAMES];
 
 	// Apply special designation to size 3 and 4 cages that will appear as straight lines on the grid. They have special requirements for eliminating impossible solutions.
-	const straightCages = [];
-	arr
-		.filter(cage => cage.length > 2)
-		.map(cage => cage.sort((a, b) => a - b))
-		.forEach(cage => {
-			// Test for horizontal and vertical straight cages
-			if (seq(cage) || seq(cage, n)) straightCages.push(cage);
-		});
+	// const straightCages = [];
+	// arr
+	// 	.filter(cage => cage.length > 2)
+	// 	.map(cage => cage.sort((a, b) => a - b))
+	// 	.forEach(cage => {
+	// 		// Test for horizontal and vertical straight cages
+	// 		if (seq(cage) || seq(cage, n)) straightCages.push(cage);
+	// 	});
 
 	const data = [];
 
@@ -436,7 +426,8 @@ const selectOps = (arr, str, n) => {
 
 			// FIXME: maybe sequence could work in >4 cages?
 			// Append sequence for size 3 and 4 cages
-			if (cage.length > 2 && cage.length < 5 && seq(cage)) operations.push(seq);
+			if (cage.length > 2 && cage.length < 5 && sequence(cage))
+				operations.push(sequence);
 		}
 		// Append equal for for size 1 cages
 		else operations.push(equ);
@@ -455,7 +446,7 @@ const selectOps = (arr, str, n) => {
 			lockable: solutions.length > 1,
 			op: opSymbol[`${op.name}`],
 			solutions: solutions,
-			straight: straightCages.includes(arr[cageIdx]),
+			// straight: straightCages.includes(arr[cageIdx]),
 			value: Number.isInteger(op(cage)) && op(cage),
 		});
 

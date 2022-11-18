@@ -45,13 +45,14 @@ export default function CalcudokuPage() {
 	const handleSolutions = (cageIdx, cellIdx) =>
 		setSolutionsData({
 			cageIdx: cageIdx,
+			cageIdxArr: puzzle.cages[cageIdx] && puzzle.cages[cageIdx].idx,
 			cellIdx: cellIdx,
 			invalidSolutions: invalidSolutions,
 			lockedSolution: lockedSolution,
 			solutions: Number.isInteger(cageIdx)
 				? puzzle.cages[cageIdx].solutions
 				: [],
-			straight: puzzle.cages[cageIdx] && puzzle.cages[cageIdx].straight,
+			// straight: puzzle.cages[cageIdx] && puzzle.cages[cageIdx].straight,
 		});
 
 	const [invalidSolutions, setInvalidSolutions] = useState({});
@@ -198,20 +199,14 @@ export default function CalcudokuPage() {
 				{/* Display solutions on hover */}
 				<Col>
 					{solutionsData && (
-						<Solutions solutionsData={solutionsData} size={size} />
+						<Solutions
+							answer={answer}
+							eliminatedNumbers={eliminatedNumbers}
+							solutionsData={solutionsData}
+							size={size}
+						/>
 					)}
 				</Col>
-
-				{/* <div
-					style={{
-						marginTop: '5rem',
-						// Bottom: +y, top: -y, left: -x, right: +x
-						boxShadow:
-							'inset 0 1px 0 0 red, inset 0 -1px 0 0 red, inset -1px 0 0 0 red, inset 1px 0 0 0 red',
-						height: '200px',
-						width: '200px',
-					}}
-				></div> */}
 			</Row>
 		</Container>
 	);

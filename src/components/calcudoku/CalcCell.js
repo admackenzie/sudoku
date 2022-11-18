@@ -37,15 +37,20 @@ export default function CalcCell({ ...props }) {
 		- Make eliminated numbers count toward invalidating solutions. The cage should check both the eliminated numbers object and the invalid numbers object for each of its cells. If every cell in the cage is in a row or column that contains the same invalid number, change the class of all solutions that have that number.
 		- Implement inequality (and more broadly, cages larger than size 4) 
 		- Find a better place for the undo button
+		- Implement win state
+		- Refactor page-level objects (invalidNumbers, etc) as maps 
+		- Push green solutions to the top of the list
+		- Add square cage attribute and invalidate solutions that are two pairs of numbers for all non-square cages
 		
 		Maybes:
 		- Lock icons only appear when hovering a cage
 		- Lock icons appear in anchor cell when hovering any cell in the cage
+		- Inset box shadows in "bent" cages are missing a few pixels in the corner
 	*/
 
 	const handleMouseEnter = () => {
 		if (!props.locked) {
-			// Cage highlight functionality. Apply cell-specific border styles to all borders of all cells within the hovered cage
+			// Cage highlight functionality. Apply cell-specific box shadow styles to all sides of all cells within the hovered cage
 			props.cages[cageIdx].idx.forEach(i => {
 				document.getElementById(`cell-${i}`).style.boxShadow =
 					props.borderData[i];

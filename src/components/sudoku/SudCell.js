@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 // Styles
-import classes from './SudCell.module.css';
+import classes from '../../sudoku.module.css';
 
 // Components
 import { CloseButton, Col, Form } from 'react-bootstrap';
@@ -9,6 +9,11 @@ import { CloseButton, Col, Form } from 'react-bootstrap';
 export default function SudCell({ ...props }) {
 	const cellVal = props.answer[props.cellIdx];
 	const re = /\b[1-9]\b/;
+
+	// Isolate cells along box edges that need additional border styles
+	const boxBottom = cellIdx =>
+		Math.floor(cellIdx / 9) === 2 || Math.floor(cellIdx / 9) === 5;
+	const boxRight = cellIdx => cellIdx % 9 === 2 || cellIdx % 9 === 5;
 
 	// Prevent interactivity for given number cells
 	const given = useState(re.test(props.puzzle[props.cellIdx]))[0];
@@ -43,7 +48,14 @@ export default function SudCell({ ...props }) {
 
 	return (
 		<Col
-			className="border border-dark border-2 p-1 "
+			className={
+				// Apply additional border styles to 3 x 3 boxes
+				`${classes.cell}
+				${boxBottom(props.cellIdx) && classes.boxBottom}
+				${boxRight(props.cellIdx) && classes.boxRight} 
+			
+				p-1`
+			}
 			onClick={() => props.handleFocus(props.cellIdx)}
 		>
 			{
@@ -57,7 +69,7 @@ export default function SudCell({ ...props }) {
 						/>
 
 						<Form.Control
-							className={`${classes.input} fs-1 text-center`}
+							className={`${classes.cellContent} fs-1 text-center`}
 							defaultValue={cellVal}
 							disabled
 							id={`cell-${props.cellIdx}`}
@@ -66,7 +78,7 @@ export default function SudCell({ ...props }) {
 				) : (
 					// Display all other cells
 					<Form.Control
-						className={`${classes.input} fs-1 text-center`}
+						className={`${classes.cellContent} fs-1 text-center`}
 						defaultValue={re.test(cellVal) ? cellVal : null}
 						disabled={given || props.solved}
 						id={`cell-${props.cellIdx}`}
