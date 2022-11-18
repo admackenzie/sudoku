@@ -1,6 +1,16 @@
-// No spaces in rgba values or it'll break the processor
+// Default border and highlighted cage styling. Syntax: one space between each value and multi-value attributes (e.g., rgba) may not contain any spaces
 const BORDER_DEFAULT = '0 0 0 1px black';
 const BORDER_HIGHLIGHT = 'inset 0 0 0 3px rgba(0,0,0,0.8)';
+
+// Key: puzzle size, value: weights for size 2, 3, and 4 cages
+const CAGE_SIZE_WEIGHTS = {
+	4: [6, 3, 1],
+	5: [6, 3, 1],
+	6: [4, 3, 3],
+	7: [4, 3, 3],
+	8: [2, 4, 4],
+	9: [2, 4, 4],
+};
 
 const CSS_COLOR_NAMES = [
 	'AliceBlue',
@@ -153,4 +163,4 @@ const CSS_COLOR_NAMES = [
 	// 'YellowGreen',
 ];
 
-export { BORDER_DEFAULT, BORDER_HIGHLIGHT, CSS_COLOR_NAMES };
+export { BORDER_DEFAULT, BORDER_HIGHLIGHT, CAGE_SIZE_WEIGHTS, CSS_COLOR_NAMES };
